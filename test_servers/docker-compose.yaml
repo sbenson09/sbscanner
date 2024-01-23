@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: nginx/.
+    ports:
+      - "8080:80"
+  httpd:
+    build: httpd/.
+    ports:
+      - "8081:80"
