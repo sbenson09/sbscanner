@@ -7,16 +7,16 @@ Write a scanner in either Python, Go, or Bash which will test web servers basic 
 ## Considerations
 The scanner is developed with the following considerations in mind:
 ### Scaleability - You may need to run this on tens of thousands of hosts.
-#### Performance
+##### Performance
 To ensure high performance, the scanner makes HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
-#### Bulk targeting
+##### Bulk targeting
 To ensure the scanner can be ran against tens of thousands of hosts, the scanner supports declaring bulk targets via a file.
 
 ### Ports - The service may be running on an alternative port.
 The scanner addresses the concern of alternative ports by allowing the port to be specified, either together, as a piece of data paired with a host entry, or separately, as list provided by the user.
 
 ### Output - Is the output of the tool easy to decipher and could you easily use the input for other tools?
-#### Easy to decipher
+##### Easy to decipher
 The scanner addresses this concern by providing relevant results to STDOUT by default. The output is easily parsed by grep and other stream editors.
 
 #### Output interpoerability
