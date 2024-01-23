@@ -1,5 +1,5 @@
 # Apple VRE Take Home Assignment: sbscanner
-This is a private repo dedicated to Apple's take home coding exercise for the Vulnerability Response Engineer position
+This is a private repo dedicated to Apple's take home coding exercise for the Vulnerability Response Engineer position.
 
 ## Assignment 
 Write a scanner in either Python, Go, or Bash which will test web servers basic auth for credentials of root:root.
@@ -20,7 +20,7 @@ The scanner is developed with the following considerations in mind:
 **Output interpoerability:** The scanner addresses output interoperability by allowing the user to export the output as either a JSON or XML, in addition to the default STDOUT report option.
 
 ### Accuracy - How can you confirm the result is a true positive?
-**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth by inspecting the HTTP response, but by also authenticating with the webserver using the provided provided credentials (default: root:root)
+**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success 
 
 ## Instructions
 
