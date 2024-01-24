@@ -68,7 +68,7 @@ Options:
 
 ## Example usage
 
-##### Scanning URLs/Ports defined in a .csv.
+### Scanning URLs/Ports defined in a .csv.
 ```
 ~/sbscanner/ main ⇣ ≡
 $ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl          
@@ -78,7 +78,7 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-##### Scanning URLs/Ports defined in a .csv, with verbose output.
+### Scanning URLs/Ports defined in a .csv, with verbose output.
 ```
 ~/sbscanner/ main ⇣ ≡
 $ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl --verbose     
@@ -96,7 +96,7 @@ https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'r
 https://127.0.0.1:8444 - FAILED - Connection failed: Cannot connect to host 127.0.0.1:8444 ssl:False [Connect call failed ('127.0.0.1', 8444)]
 ```
 
-##### Scanning URLs/Ports defined in a .txt.
+### Scanning URLs/Ports defined in a .txt.
 ```
 ~/sbscanner/ main ⇣ ≡
 $ python3 sbscanner.py --text inputs/text_input.txt --no-verify-ssl
@@ -105,7 +105,7 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-##### Scanning a list of URLs/Ports provided as commandline arguments.
+### Scanning a list of URLs/Ports provided as commandline arguments.
 ```
 ~/sbscanner main ⇣ ≡
 $ python3 sbscanner.py --list --list-ports 80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl
@@ -114,22 +114,23 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://localhost:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-##### Scanning a list of URL/Ports provided as commandline arguments, and using grep to filter results to auth failure due to invalid credentials.
+### Scanning a list of URL/Ports provided as commandline arguments, and using grep to filter results to auth failure due to invalid credentials.
 ```
 ~/sbscanner main ⇣ ≡
 $ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl --verbose | grep "Basic auth failed"
 http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
 ```
 
-#### Docker
+## Docker
 
 A Dockerfile has also been included for use. Build the docker image, and then run with the following:
 ```
 docker run [image name] [options]
 ```
 
-##### Docker example usage
+### Docker example usage
 ```
+# In the directory of the cloned repo
 ~/sbscanner main ⇣ ≡
 $ docker build. -t sbscanner
 
@@ -147,10 +148,10 @@ https://www.netflix.com:443 - FAILED - HTTP Basic auth not required.
 https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
-### Sample input data
+## Sample input data
 Sample input and testing data has been provided for the user in the [/inputs](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/inputs) folder.
 
-### Assumptions & Considerations
+## Assumptions & Considerations
 * While Nmap or similar existing tools could be easily leverage as the scanning engine, this is assumed to be out of ther spirit of the assignment, and therefore were not considered.
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
