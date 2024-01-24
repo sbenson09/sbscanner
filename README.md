@@ -168,7 +168,7 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * CSV file input assumes the use of a header row.
 
 ## Limitations
-* The scanner assumed TCP, and does not support the scanning of UDP ports.
+* The scanner assumes TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
 * Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
 * Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
