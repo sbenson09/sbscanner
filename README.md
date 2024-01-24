@@ -11,7 +11,7 @@ Write a scanner in either Python, Go, or Bash which will test web servers basic 
 
 The scanner is written in Python.
 
-### Scaleability - You may need to run this on tens of thousands of hosts.
+### Scalability - You may need to run this on tens of thousands of hosts.
 **Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
 
 **Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk targets input via file.
@@ -22,10 +22,10 @@ The scanner is written in Python.
 ### Output - Is the output of the tool easy to decipher and could you easily use the input for other tools?
 **Easy to decipher:** The scanner clearly reports cases of successful HTTP Basic Auth to STDOUT by default. Failures and errors are also easily presented through the use of the `--verbose` flag. Each result is captured in its own line, and therefore easily parsed by grep and other stream editors.
 
-**Output interpoerability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT as either a JSON or XML, in addition to the default text report option.
+**Output interoperability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT as either a JSON or XML, in addition to the default text report option.
 
 ### Accuracy - How can you confirm the result is a true positive?
-**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
+**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
 
 ## Installation
 ```
@@ -106,7 +106,7 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-### Scanning a list of URLs/Ports provided as commandline arguments.
+### Scanning a list of URLs/Ports provided as command line arguments.
 ```
 ~/sbscanner main ⇣ ≡
 $ python3 sbscanner.py --list --list-ports 80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl
@@ -115,7 +115,7 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://localhost:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-### Scanning a list of URL/Ports provided as commandline arguments, and using grep to filter results to auth failure due to invalid credentials.
+### Scanning a list of URL/Ports provided as command line arguments, and using grep to filter results to auth failure due to invalid credentials.
 ```
 ~/sbscanner main ⇣ ≡
 $ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl --verbose | grep "Basic auth failed"
@@ -160,7 +160,7 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 ## Assumptions & Considerations
 * Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
 * The scanner must support both HTTP and HTTPS.
-* While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
+* While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 * For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
   * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
 * In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but certainly could be optimized. Note that the simulation was performed against localhost.
@@ -168,16 +168,16 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * CSV file input assumes the use of a header row.
 
 ## Limitations
-* The scanner assumes TCP, and does not support the scanning of UDP ports.
+* The scanner is designed for TCP and does not support scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
+* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
 * Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
 * The scanner has no options to control concurrency or rate limiting.
 
 ## Dependencies
-sbscanner was developed using Python 3.11, and contains the following depencies.
-* `aiohttp` for asynchronous http requests
+sbscanner was developed using Python 3.11, and contains the following dependencies.
+* `aiohttp` for asynchronous HTTP requests
 * `click` for handling command line arguments
-* `dicttoxml` for converting Python dictionaries to XML.
+* `dicttoxml` for converting Python dictionaries to XML
 
 
