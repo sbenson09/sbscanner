@@ -1,0 +1,10 @@
+https://www.google.com:443
+https://www.youtube.com:443
+https://www.facebook.com:443
+https://www.amazon.com:443
+https://www.wikipedia.org:443
+https://www.twitter.com:443
+https://www.instagram.com:443
+https://www.linkedin.com:443
+https://www.netflix.com:443
+https://www.reddit.com:443
