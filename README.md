@@ -4,8 +4,13 @@ This is a private repo dedicated to Apple's take home coding exercise for the Vu
 ## Assignment 
 Write a scanner in either Python, Go, or Bash which will test web servers basic auth for credentials of root:root.
 
-## Considerations
-The scanner is developed with the following considerations in mind:
+## Requirements
+The scanner is developed to the following requirements:
+
+### Language - Python, Go, or Bash
+
+The scanner is written in Python.
+
 ### Scaleability - You may need to run this on tens of thousands of hosts.
 **Performance:** To ensure high performance, the scanner makes HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
 
@@ -22,14 +27,24 @@ The scanner is developed with the following considerations in mind:
 ### Accuracy - How can you confirm the result is a true positive?
 **Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success 
 
-## Instructions
+## Instructions for use
+
+### Assumptions & Considerations
+* While Nmap could be easily leveraged for the bulk, if not all of these requirements, writing a wrapper that provides nmap input would likely not be within the spirit of the exercise and thus a scanning engine should be built from scratch.
+* The scanner should support both HTTP and HTTPS.
+* While certain requirements of the assignment are hardcoded (e.g. use of root:root), where possible, the scanner will expect these to be input into the scanner as an argument to allow for future flexibility.
 
 ## Dependencies
-aiohttp
-aiosync
-click
+* aiohttp
+* aiosync
+* click
 
 ## Limitations
+The scanner does not support the scanning of UDP ports. 
 
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
+
+Accepts list input
+Accepts csv input
+Accepts flat file input
