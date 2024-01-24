@@ -45,36 +45,51 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
         dom = parseString(unformatted_xml)
         pretty_xml = dom.toprettyxml(indent="    ")  # Adjust indent size as needed
         click.echo(pretty_xml)
-    else:  # default to text output
+    elif output == 'text':  # default to text output
         generate_report(scan_result, username, password, verbose)
 
 # Processing input
 def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose):
-    """Process input from a CSV file, a flat text file, or a list of comma-separated items."""
-    if any(arg for arg in [csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col]):
-        # Continue with processing since options were provided
+    target_dict = {}
 
-        if csv_filepath:
-            if not url_col or not port_col:
-                raise click.UsageError('--url-col and --port-col options are required for CSV input.')
-            if verbose:
-                click.echo("Using csv input.")
+    if csv_filepath:
+        if verbose:
+            click.echo("Using csv input.")
+        # Validate that the CSV has the required headers (columns)
+        with open(csv_filepath, newline='') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            headers = next(csv_reader, None)
+            if url_col not in headers or port_col not in headers:
+                raise click.UsageError(f'CSV file must contain "{url_col}" and "{port_col}" columns.')
             target_dict = process_csv(csv_filepath, url_col, port_col)
-        elif text_filepath:
-            if verbose:
-                click.echo("Using textfile input.")
+    
+    if text_filepath:
+        # Validate that each line in the text file follows the expected "url:port" format
+        with open(text_filepath, 'r') as text_file:
+            for line_number, line in enumerate(text_file, 1):
+                if ':' not in line or line.count(':') != 2:
+                    raise click.UsageError(f"Line {line_number} in text file is not correctly formatted.")
             target_dict = process_text_file(text_filepath)
-        elif list_flag:
-            if not list_urls or not list_ports:
-                raise click.UsageError('--list-urls and --list-ports options are required when using --list.')
-            if verbose:    
-                click.echo("Using list of URLs & Ports as input.")
-            target_dict = process_list(list_urls, list_ports)
-    else:
-        click.echo(ctx.get_help())
-        ctx.exit()
-    return target_dict
 
+    if list_flag:
+        if verbose:    
+            click.echo("Using list of URLs & Ports as input.")
+        # Validate that the list arguments are not empty and have the correct format
+        if not list_urls or not list_ports:
+            raise click.UsageError('--list-urls and --list-ports options are required when using --list.')
+        url_list = list_urls.split(',')
+        port_list = list_ports.split(',')
+        if not all(url_list) or not all(port_list):
+            raise click.UsageError('List arguments must contain valid URL and port entries separated by commas.')
+
+        # Additional format checking can be added here (e.g., check that each URL is valid)
+        target_dict = process_list(list_urls, list_ports)
+
+    if not any([csv_filepath, text_filepath, list_flag]):
+        raise click.UsageError('You must provide an input using --csv, --text, or --list options.')
+
+    return target_dict
+    
 # Scanning
 import aiohttp
 from base64 import b64encode
@@ -86,9 +101,9 @@ async def scan_targets(targets, verbose, username, password, verify_ssl=True):
 
     async with aiohttp.ClientSession() as session:
         for target, details in targets.items():
+            connected = False
             try:
                 # Attempt the first request without the Authorization header
-                connected = False
                 async with session.get(target, ssl=ssl_context) as initial_response:
                     connected = True
                     if initial_response.status == 401 and 'WWW-Authenticate' in initial_response.headers:
@@ -136,7 +151,7 @@ def generate_report(targets, username, password, verbose):
                     auth_msg = "HTTP Basic auth not required"
                 click.echo(f"{target} - FAILED - {auth_msg}")
         elif verbose and 'error' in details:
-            click.echo(f"{target} - FAILED - Connection failed: {details['error']}", err=True)
+            click.echo(f"{target} - FAILED - Connection failed: {details['error']}")
 
 # Processing of input
 
