@@ -4,6 +4,7 @@ import aiohttp
 import asyncio
 import json
 import dicttoxml
+import validators
 from xml.dom.minidom import parseString
 from base64 import b64encode
 
@@ -91,9 +92,6 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     return target_dict
     
 # Scanning
-import aiohttp
-from base64 import b64encode
-
 async def scan_targets(targets, verbose, username, password, verify_ssl=True):
     creds = f'{username}:{password}'.encode('utf-8')  # Encode the credentials to bytes
     auth_header = 'Basic ' + b64encode(creds).decode('utf-8')  # Base64 encode the credentials and decode to string
