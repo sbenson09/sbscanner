@@ -135,7 +135,7 @@ docker run [image name] [options]
 ## Limitations
 * The scanner assumed TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale would be desirable, but was avoided for this assignment.
+* Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker. Additional testing with remote targets at scale would be highly desirable.
 * Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
 
 ## Dependencies
