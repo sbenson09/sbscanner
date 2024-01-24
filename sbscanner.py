@@ -4,7 +4,6 @@ import aiohttp
 import asyncio
 import json
 import dicttoxml
-import validators
 from xml.dom.minidom import parseString
 from base64 import b64encode
 
