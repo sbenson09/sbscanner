@@ -124,7 +124,7 @@ http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root
 
 ## Docker
 
-A Dockerfile has also been included for use. Build the docker image, and then run with the following:
+A Dockerfile to build the scanner has also been included for use. Build the docker image, and then run with the following:
 ```
 docker run [image name] [options]
 ```
