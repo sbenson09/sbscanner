@@ -28,7 +28,8 @@ The scanner is written in Python.
 **Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
 
 ## Installation
-```bash
+```
+# From cloned repo directory
 git clone https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024.git
 pip3 install -r requirements.txt
 ```
@@ -132,7 +133,7 @@ docker run [image name] [options]
 ```
 # In the directory of the cloned repo
 ~/sbscanner main ⇣ ≡
-$ docker build. -t sbscanner
+$ docker build . -t sbscanner
 
 ~/sbscanner main ⇣ ≡
 $ docker run sbscanner --text inputs/text_input_remote.txt --verbose --no-verify-ssl             
@@ -149,15 +150,15 @@ https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
 ## Sample input data
-Sample input and testing data has been provided for the user in the [/inputs](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/inputs) folder.
+Sample input and testing data has been provided and available for use in the [/inputs](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/inputs) folder.
 
 ## Assumptions & Considerations
-* While Nmap or similar existing tools could be easily leverage as the scanning engine, this is assumed to be out of ther spirit of the assignment, and therefore were not considered.
+* Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 * For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
   * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
-* In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but almost certainly could be optimized. Note that the simulation was performed against localhost.
+* In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but certainly could be optimized. Note that the simulation was performed against localhost.
   * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
 * CSV file input assumes the use of a header row.
 
@@ -166,11 +167,12 @@ Sample input and testing data has been provided for the user in the [/inputs](ht
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
 * Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
 * Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
+* The scanner has no options to control concurrency or rate limiting.
 
 ## Dependencies
+sbscanner was developed using Python 3.11, and contains the following depencies.
+* `aiohttp` for asynchronous http requests
+* `click` for handling command line arguments
+* `dicttoxml` for converting Python dictionaries to XML.
 
-sbscanner contains the following depencies.
-* aiohttp
-* click
-* dicttoxml
 
