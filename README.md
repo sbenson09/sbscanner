@@ -5,7 +5,7 @@ This is a private repo dedicated to Apple's take home coding exercise for the Vu
 Write a scanner in either Python, Go, or Bash which will test web servers basic auth for credentials of root:root.
 
 ## Requirements
-The scanner is developed to the following requirements:
+**sbscanner** is developed to the following requirements:
 
 ### Language - Python, Go, or Bash
 
