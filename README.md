@@ -40,7 +40,8 @@ The scanner is written in Python.
 * click
 
 ## Limitations
-The scanner does not support the scanning of UDP ports. 
+* The scanner does not support the scanning of UDP ports.
+* The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
 
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
