@@ -156,22 +156,25 @@ def process_csv(filepath, url_column, port_column):
     targets = {}
     with open(filepath, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
-        for row in reader:
+        for line_number, row in enumerate(reader, start=2):  # Start at 2 to account for the header row
             url = row[url_column]
-            port = row[port_column]
-            key = f'{url}:{port}'
+            port = row[port_column].strip()
+            if not port.isdigit() or not 0 < int(port) <= 65535:
+                raise click.UsageError(f"Invalid port found in CSV: {port} (Line {line_number})")
+            key = f"{url}:{port}"
             targets[key] = {'url': url, 'port': port}
     return targets
 
 def process_text_file(filepath):
     targets = {}
     with open(filepath, 'r') as text_file:
-        for line in text_file:
-            # Strip newline characters and whitespace from line
+        for line_number, line in enumerate(text_file, start=1):
             line = line.strip()
-            # Split the line from the right at the first colon
             if ':' in line:
                 url, port = line.rsplit(':', 1)
+                port = port.strip()
+                if not port.isdigit() or not 0 < int(port) <= 65535:
+                    raise click.UsageError(f"Invalid port found in text file: {port} (Line {line_number})")
                 targets[line] = {'url': url, 'port': port}
     return targets
 
@@ -179,13 +182,14 @@ def process_list(urls, ports):
     targets = {}
     url_list = urls.split(',')
     port_list = ports.split(',')
-    
+
     for url in url_list:
         for port in port_list:
-            url = url.strip()  # Trim whitespace from the url
-            port = port.strip()  # Trim whitespace from the port
-            
-            key = f'{url}:{port}'
+            url = url.strip()
+            port = port.strip()
+            if not port.isdigit() or not 0 < int(port) <= 65535:
+                raise click.UsageError(f"Invalid port found in list: {port}")
+            key = f"{url}:{port}"
             targets[key] = {'url': url, 'port': port}
     return targets
 
