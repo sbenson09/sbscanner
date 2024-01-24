@@ -31,7 +31,7 @@ The scanner is written in Python.
 ```
 Usage: sbscanner.py [OPTIONS]
 
-  An HTTP Basic Authentication scanner written in Python.
+  An HTTP Basic Authentication scanner written in Python by Sean Benson.
 
   Features:
 
@@ -48,23 +48,23 @@ Options:
                             targets.
   --list                    Flag to indicate that input is supplied via CLI
                             arguments.
-  --list-urls TEXT          Comma separate list of URL values.
-  --list-ports TEXT         Comma separate list of port values.
+  --list-urls TEXT          Comma separated list of URL values.
+  --list-ports TEXT         Comma separated list of port values.
   --url-col TEXT            Name of the URL column in the CSV.
   --port-col TEXT           Name of the port column in the CSV.
   --username TEXT           Username for HTTP Basic Auth.
   --password TEXT           Password for HTTP Basic Auth.
-  --verbose                 Enables verbose mode.
-  --no-verify-ssl           Enables ssl verification when scanning.
+  --verbose                 Enables verbose mode for text output.
+  --no-verify-ssl           Disables ssl verification when scanning.
   --output [text|json|xml]  Output format: text, json or xml
   --help                    Show this message and exit.
 ```
 
 ## Example usage
 
-##### Scanning a list of URLs/Ports in a .csv.
+##### Scanning URLs/Ports defined in a .csv.
 ```
-~/sbscanner/ main ≡
+~/sbscanner/ main ⇣ ≡
 $ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl          
 http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 http://localhost:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
@@ -72,9 +72,9 @@ http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'ro
 https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 ```
 
-##### Scanning a list of URLs/Ports in a .csv, with verbose output.
+##### Scanning URLs/Ports defined in a .csv, with verbose output.
 ```
-~/sbscanner/ main ≡
+~/sbscanner/ main ⇣ ≡
 $ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl --verbose     
 Using csv input.
 http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
@@ -90,6 +90,37 @@ https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'r
 https://127.0.0.1:8444 - FAILED - Connection failed: Cannot connect to host 127.0.0.1:8444 ssl:False [Connect call failed ('127.0.0.1', 8444)]
 ```
 
+##### Scanning URLs/Ports defined in a .txt.
+```
+~/sbscanner/ main ⇣ ≡
+❯ python3 sbscanner.py --text inputs/text_input.txt --no-verify-ssl
+http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+```
+
+##### Scanning a list of URLs/Ports provided as commandline arguments.
+```
+~/sbscanner main ⇣ ≡
+❯ python3 sbscanner.py --list --list-ports 80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl
+http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+https://localhost:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+```
+
+##### Scanning a list of URL/Ports provided as commandline arguments, and using grep to filter results to auth failure due to invalid credentials.
+```
+~/sbscanner main ⇣ ≡
+❯ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl --verbose | grep "Basic auth failed"
+http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
+```
+
+#### Docker
+
+A Dockerfile has also been included for use. Build the docker image, and then run with the following:
+```
+docker run [image name] [options]
+```
 
 ### Assumptions & Considerations
 * While Nmap could be easily leveraged for the assignment and may allow for easily meeting the requirements, this is assumed to be out of ther spirit of the assignment, and therefore not considered.
@@ -99,11 +130,13 @@ https://127.0.0.1:8444 - FAILED - Connection failed: Cannot connect to host 127.
   * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
 * In larger scans that would likely run on a daily schedule, the script is also sufficiently performant, but could certainly be optimized
   * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
+* CSV file input assumes the use of a header row.
 
 ## Limitations
 * The scanner assumed TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale.
+* Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale would be very desirable, but avoided for this assignment.
+* Requests that are silently dropped by either the server or WAFs may result in significant slowdowns.
 
 ## Dependencies
 * aiosync
