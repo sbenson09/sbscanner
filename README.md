@@ -29,8 +29,8 @@ The scanner is written in Python.
 
 ## Installation
 ```
-# From cloned repo directory
-git clone https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024.git
+git clone https://github.com/sbenson09/sbscanner.git
+cd sbscanner
 pip3 install -r requirements.txt
 ```
 
@@ -150,12 +150,12 @@ https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
 ## Sample input data
-Sample input and testing data has been provided and available for use in the [/inputs](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/inputs) folder.
+Sample input and testing data has been provided and available for use in the [/inputs](https://github.com/sbenson09/sbscanner/tree/main/inputs) folder.
 
 ## Test server environment via docker compose.
-To test across several cases (http, https, nginx server, httpd server, successful basic auth, failed basic auth invalid credentials, etc.) a series of Dockerfiles, orchestrated by a docker-compose manifest were included in the [/test_servers](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/test_servers) folder.
+To test across several cases (http, https, nginx server, httpd server, successful basic auth, failed basic auth invalid credentials, etc.) a series of Dockerfiles, orchestrated by a docker-compose manifest were included in the [/test_servers](https://github.com/sbenson09/sbscanner/tree/main/test_servers) folder.
 
-Refer to [docker compose documentation](https://docs.docker.com/compose/) for instructions on installation and use.
+Refer to Docker's [docker compose documentation](https://docs.docker.com/compose/) for instructions on installation and use.
 
 ## Assumptions & Considerations
 * Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
