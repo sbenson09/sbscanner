@@ -30,6 +30,7 @@ aiosync
 click
 
 ## Limitations
+The scanner does not support the scanning of UDP ports. 
 
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
