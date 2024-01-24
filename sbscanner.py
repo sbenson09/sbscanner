@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import click
 import csv
 import aiohttp
@@ -8,20 +9,21 @@ from xml.dom.minidom import parseString
 from base64 import b64encode
 
 @click.command(context_settings=dict(
+    # To change click argument handling behavior:
     #ignore_unknown_options=True,
     #allow_extra_args=True,
 ))
 @click.option('--csv', 'csv_filepath', type=click.Path(exists=True), help='Path to a CSV file, containing a list of urls & ports.')
 @click.option('--text', 'text_filepath', type=click.Path(exists=True), help='Path to a text file, containing url:port notated targets.')
 @click.option('--list', 'list_flag', required=False, is_flag=True, help='Flag to indicate that input is supplied via CLI arguments.')
-@click.option('--list-urls', 'list_urls', required=False, help='Comma separate list of URL values.')
-@click.option('--list-ports', 'list_ports', required=False, help='Comma separate list of port values.')
+@click.option('--list-urls', 'list_urls', required=False, help='Comma separated list of URL values.')
+@click.option('--list-ports', 'list_ports', required=False, help='Comma separated list of port values.')
 @click.option('--url-col', required=False, help='Name of the URL column in the CSV.')
 @click.option('--port-col', required=False, help='Name of the port column in the CSV.')
 @click.option('--username', 'username', default='root', help='Username for HTTP Basic Auth.')
 @click.option('--password', 'password', default='root', help='Password for HTTP Basic Auth.')
-@click.option('--verbose', is_flag=True, required=False, help='Enables verbose mode.')
-@click.option('--no-verify-ssl', is_flag=True, required=False, help='Enables ssl verification when scanning.')
+@click.option('--verbose', is_flag=True, required=False, help='Enables verbose mode for text output.')
+@click.option('--no-verify-ssl', is_flag=True, required=False, help='Disables ssl verification when scanning.')
 @click.option('--output', type=click.Choice(['text', 'json', 'xml'], case_sensitive=False), default='text', help='Output format: text, json or xml')
 @click.pass_context
 def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, username, password, verbose, no_verify_ssl, output):
@@ -32,30 +34,37 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     * Supports multiple forms of output via STDOUT (Text report, XML, CSV).\n
     * Performant through the use of Python's aiohttp framework.\n"""
 
+    # Take input provided by user, and process into a dictionary of targets to use for scanning
     targets = process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose)
+    
+    # Run the scan against each provided target. 
     event_loop = asyncio.get_event_loop()
     scan_result = event_loop.run_until_complete(scan_targets(targets, verbose, username, password, not no_verify_ssl))
     event_loop.close()
+    
+    # Provide output report based on user input
     if output == 'json':
         click.echo(json.dumps(scan_result, indent=4))
     elif output == 'xml':
-        # Convert scan_result to an unformatted XML string using dicttoxml
         unformatted_xml = dicttoxml.dicttoxml(scan_result, custom_root='scan_results', attr_type=False)
-        # Parse the unformatted XML string, then pretty print
+        # Parse the unformatted XML string, then pretty print to stdout
         dom = parseString(unformatted_xml)
-        pretty_xml = dom.toprettyxml(indent="    ")  # Adjust indent size as needed
+        pretty_xml = dom.toprettyxml(indent="    ") 
         click.echo(pretty_xml)
-    elif output == 'text':  # default to text output
-        generate_report(scan_result, username, password, verbose)
+    elif output == 'text':  # Click defaults to text output
+        generate_text_report(scan_result, username, password, verbose)
 
-# Processing input
 def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose):
+    """
+    Takes input provided by user, validates the input, and returns a dictionary with processed scanning targets.
+    """
     target_dict = {}
 
-    if csv_filepath:
+    # For CSV input, loop through .csv file, validate that url and port header values
+    # are valid, and then return a target dictionary
+    if csv_filepath and not any([text_filepath, list_flag]):
         if verbose:
             click.echo("Using csv input.")
-        # Validate that the CSV has the required headers (columns)
         with open(csv_filepath, newline='') as csv_file:
             csv_reader = csv.reader(csv_file)
             headers = next(csv_reader, None)
@@ -63,39 +72,50 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
                 raise click.UsageError(f'CSV file must contain "{url_col}" and "{port_col}" columns.')
             target_dict = process_csv(csv_filepath, url_col, port_col)
     
-    if text_filepath:
-        # Validate that each line in the text file follows the expected "url:port" format
+    # For text input, loop through .txt file, validate that lines follow expected format,
+    # and then return a target dictionary
+    elif text_filepath and not any([csv_filepath, list_flag]):
         with open(text_filepath, 'r') as text_file:
             for line_number, line in enumerate(text_file, 1):
-                if ':' not in line or line.count(':') != 2:
+                if ':' not in line or line.count(':') != 2:  # Anticipate 2 ':' (1 in http://, 1 between url + port)
                     raise click.UsageError(f"Line {line_number} in text file is not correctly formatted.")
             target_dict = process_text_file(text_filepath)
 
-    if list_flag:
+    # For list input, loop through lists, validating that lines are not empty,
+    # and are valid, and then return a target dictionary.
+    elif list_flag and not any([text_filepath, csv_filepath]):
         if verbose:    
             click.echo("Using list of URLs & Ports as input.")
-        # Validate that the list arguments are not empty and have the correct format
         if not list_urls or not list_ports:
             raise click.UsageError('--list-urls and --list-ports options are required when using --list.')
         url_list = list_urls.split(',')
         port_list = list_ports.split(',')
         if not all(url_list) or not all(port_list):
             raise click.UsageError('List arguments must contain valid URL and port entries separated by commas.')
-
-        # Additional format checking can be added here (e.g., check that each URL is valid)
         target_dict = process_list(list_urls, list_ports)
 
-    if not any([csv_filepath, text_filepath, list_flag]):
-        raise click.UsageError('You must provide an input using --csv, --text, or --list options.')
+    else:
+        # In the event a user has not provided a single input option
+        raise click.UsageError('You must provide an input using only one of: --csv, --text, or --list options.')
 
     return target_dict
     
 # Scanning
 async def scan_targets(targets, verbose, username, password, verify_ssl=True):
-    creds = f'{username}:{password}'.encode('utf-8')  # Encode the credentials to bytes
-    auth_header = 'Basic ' + b64encode(creds).decode('utf-8')  # Base64 encode the credentials and decode to string
-    ssl_context = None if verify_ssl else False
+    """
+    Takes input of target dictionary and config options, runs a scan against each item asyncronously to determine
+    whether they require HTTP basic authentication, and if so, whether the provided credentials can successfully authenticate
+    Returns target dictionary updated with scan results.
+    """
 
+    # Prepare the authentication header per requirements
+    # reference: https://stackoverflow.com/questions/53622829/python-encode-base64-to-basic-connect-to-an-api
+    creds = f'{username}:{password}'.encode('utf-8')  
+    auth_header = 'Basic ' + b64encode(creds).decode('utf-8')
+    
+    ssl_context = None if verify_ssl else False  #  None == ssl verification, False == no ssl verification.
+
+    # Create async http session to be used for all requests, loop through all targets
     async with aiohttp.ClientSession() as session:
         for target, details in targets.items():
             connected = False
@@ -103,50 +123,64 @@ async def scan_targets(targets, verbose, username, password, verify_ssl=True):
                 # Attempt the first request without the Authorization header
                 async with session.get(target, ssl=ssl_context) as initial_response:
                     connected = True
+                    # Check for HTTP Authentication requirements.
                     if initial_response.status == 401 and 'WWW-Authenticate' in initial_response.headers:
-                        # The server expects Basic Auth, let's try with the credentials
+                        # Check if Basic auth is supported
                         supports_basic_auth = 'Basic' in initial_response.headers.get('WWW-Authenticate', '')
-                        async with session.get(target, headers={'Authorization': auth_header}, ssl=ssl_context) as auth_response:
-                            auth_success = 200 <= auth_response.status < 300
+
+                        if supports_basic_auth:  # Basic auth is supported, try to authenticate
+                            async with session.get(target, headers={'Authorization': auth_header}, ssl=ssl_context) as auth_response:
+                                auth_success = 200 <= auth_response.status < 300
+                                details.update({
+                                    'connected': connected,
+                                    'basic_auth_required': supports_basic_auth,
+                                    'authentication_success': auth_success,
+                                })
+                        else:  # Basic auth is NOT supported.
                             details.update({
                                 'connected': connected,
-                                'basic_auth_required': supports_basic_auth,
-                                'authentication_success': auth_success,
+                                'basic_auth_required': False,
+                                'authentication_success': False,
+                                'error': 'HTTP Authentication required, but Basic Auth is not supported.',
                             })
-                    else:
-                        auth_success = 200 <= initial_response.status < 300
+                    else:  # No auth required
                         details.update({
                             'connected': connected,
                             'basic_auth_required': False,
-                            'authentication_success': auth_success,
+                            'authentication_success': not initial_response.status == 401,
                         })
-            except aiohttp.ClientError as e:
+            except aiohttp.ClientError as e:  # Client unable to connect
                 details.update({
                     'connected': connected,
-                    'basic_auth_required': False,
+                    'basic_auth_required': False,  #Assume false
                     'authentication_success': False,
                     'error': str(e),
                 })
-            except Exception as e:
+            except Exception as e:  # Generic exception
                 details.update({
                     'connected': connected,
-                    'basic_auth_required': False,
+                    'basic_auth_required': False,  #Assume false
                     'authentication_success': False,
                     'error': 'An unexpected error occurred.',
                 })
     return targets
-# Report Generation
-def generate_report(targets, username, password, verbose):
+
+def generate_text_report(targets, username, password, verbose):
+    """
+    Takes a dictionary of scan results and config options. Outputs to STDOUT in text format.
+    """
     for target, details in targets.items():
         if details.get('connected'):
             if details.get('basic_auth_required') and details.get('authentication_success'):
-                click.echo(f"{target} - SUCCESS -  HTTP Basic auth succeeded using username: '{username}' and password: '{password}'")
+                click.echo(f"{target} - SUCCESS -  HTTP Basic auth succeeded with username: '{username}' and password: '{password}'")                             # Handle the verbose output for various cases
+            # Handle the verbose output for various cases
             elif verbose:
-                if details.get('basic_auth_required'):
-                    auth_msg = f'HTTP Basic auth failed with the username: \'{username}\' and password: \'{password}\''
+                if details.get('basic_auth_required') is False and 'error' in details and 'HTTP Authentication required' in details.get('error'):
+                    click.echo(f"{target} - FAILED - HTTP Auth required, but Basic not supported")
+                elif details.get('basic_auth_required'): 
+                    click.echo(f"{target} - FAILED - HTTP Basic auth failed with username: '{username}' and password: '{password}'")
                 else:
-                    auth_msg = "HTTP Basic auth not required"
-                click.echo(f"{target} - FAILED - {auth_msg}")
+                    click.echo(f"{target} - FAILED - HTTP Basic auth not required.")
         elif verbose and 'error' in details:
             click.echo(f"{target} - FAILED - Connection failed: {details['error']}")
 
@@ -154,14 +188,17 @@ def generate_report(targets, username, password, verbose):
 def normalize_url(url):
     return url.rstrip('/')
 
-# Processing of input
 def process_csv(filepath, url_column, port_column):
+    """
+    Takes a csv filepath and header names, validates and processes the input, and returns a dictionary of targets to scan.
+    """
     targets = {}
     with open(filepath, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
         for line_number, row in enumerate(reader, start=2):  # Start at 2 to account for the header row
             url = normalize_url(row[url_column].strip())
             port = row[port_column].strip()
+            # Validate ports are digits within TCP port range
             if not port.isdigit() or not 0 < int(port) <= 65535:
                 raise click.UsageError(f"Invalid port found in CSV: {port} (Line {line_number})")
             key = f"{url}:{port}"
@@ -169,11 +206,15 @@ def process_csv(filepath, url_column, port_column):
     return targets
 
 def process_text_file(filepath):
+    """
+    Takes a txt filepath and header names, validates and processes the input, and returns a dictionary of targets to scan.
+    """
     targets = {}
     with open(filepath, 'r') as text_file:
         for line_number, line in enumerate(text_file, start=1):
             line = line.strip()
-            parts = line.rsplit(':', 1)
+            parts = line.rsplit(':', 1) 
+            # Validate ports are digits within TCP port range
             if len(parts) == 2 and parts[1].isdigit() and 0 < int(parts[1]) <= 65535:
                 url = normalize_url(parts[0])
                 port = parts[1]
@@ -183,6 +224,9 @@ def process_text_file(filepath):
     return targets
 
 def process_list(urls, ports):
+    """
+    Takes a list of urls and ports, validates and processes the input, and returns a dictionary of targets to scan.
+    """
     targets = {}
     url_list = urls.split(',')
     port_list = ports.split(',')
@@ -191,6 +235,7 @@ def process_list(urls, ports):
         url = normalize_url(url.strip())  # Normalize and strip whitespace from the URL
         for port in port_list:
             port = port.strip()  # Strip whitespace from the port
+            # Validate ports are digits within TCP port range
             if not port.isdigit() or not 0 < int(port) <= 65535:
                 raise click.UsageError(f"Invalid port found in list: {port}")
             key = f"{url}:{port}"
