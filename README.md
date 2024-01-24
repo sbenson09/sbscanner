@@ -34,9 +34,9 @@ The scanner is written in Python.
 * The scanner should support both HTTP and HTTPS.
 
 ## Dependencies
-aiohttp
-aiosync
-click
+* aiohttp
+* aiosync
+* click
 
 ## Limitations
 The scanner does not support the scanning of UDP ports. 
