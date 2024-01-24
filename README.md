@@ -28,23 +28,56 @@ The scanner is written in Python.
 **Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success 
 
 ## Instructions for use
+```
+Usage: sbscanner.py [OPTIONS]
+
+  An HTTP Basic Authentication scanner written in Python.
+
+  Features:
+
+  * Supports multiple forms of input (csv file, txt file, list of args).
+
+  * Supports multiple forms of output via STDOUT (Text report, XML, CSV).
+
+  * Performant through the use of Python's aiohttp framework.
+
+Options:
+  --csv PATH                Path to a CSV file, containing a list of urls &
+                            ports.
+  --text PATH               Path to a text file, containing url:port notated
+                            targets.
+  --list                    Flag to indicate that input is supplied via CLI
+                            arguments.
+  --list-urls TEXT          Comma separate list of URL values.
+  --list-ports TEXT         Comma separate list of port values.
+  --url-col TEXT            Name of the URL column in the CSV.
+  --port-col TEXT           Name of the port column in the CSV.
+  --username TEXT           Username for HTTP Basic Auth.
+  --password TEXT           Password for HTTP Basic Auth.
+  --verbose                 Enables verbose mode.
+  --no-verify-ssl           Enables ssl verification when scanning.
+  --output [text|json|xml]  Output format: text, json or xml
+  --help                    Show this message and exit.
+```
 
 ### Assumptions & Considerations
 * While Nmap could be easily leveraged for the assignment and may allow for easily meeting the requirements, this is assumed to be out of ther spirit of the assignment, and therefore not considered.
 * The scanner must support both HTTP and HTTPS.
-* While credentials of the assignment are defined upfront (i.e. root:root), the scanner will allow these to be input as commandline arguments (`--username`, `--password`) to allow for future flexibility.
-* For ad-hoc use cases where inputs are assumed to be minimal, the script is sufficiently performant (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
-* In larger scans that would likely run on a daily schedule, the script is also sufficiently performant, but could certainly be optimized (`time` output on 258k URL/Ports: `42.60s user 15.13s system 2% cpu 33:32.95 total`).
-
-## Dependencies
-* aiohttp
-* aiosync
-* click
+* While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
+* For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
+  * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
+* In larger scans that would likely run on a daily schedule, the script is also sufficiently performant, but could certainly be optimized
+  * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
 
 ## Limitations
 * The scanner assumed TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
 * Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale.
+
+## Dependencies
+* aiohttp
+* aiosync
+* click
 
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
@@ -52,7 +85,6 @@ To run the tests associated with this scanner, run `python tests.py`
 * Accepts list input
 * Accepts csv input
 * Accepts flat file input
-
 
 ## To do
 * Comments
