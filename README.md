@@ -49,3 +49,9 @@ To run the tests associated with this scanner, run `python tests.py`
 * Accepts list input
 * Accepts csv input
 * Accepts flat file input
+
+
+## To do
+* Comments
+* Summary function
+  
