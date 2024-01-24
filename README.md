@@ -12,7 +12,7 @@ Write a scanner in either Python, Go, or Bash which will test web servers basic 
 The scanner is written in Python.
 
 ### Scaleability - You may need to run this on tens of thousands of hosts.
-**Performance:** To help ensure high network I/O performance, the scanner makes HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
+**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
 
 **Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk targets input via file.
 
