@@ -12,12 +12,12 @@ RUN apt-get update && \
 RUN echo '<!DOCTYPE html><html><head><title>Authentication Succeeded</title></head><body><h1>Basic Authentication Succeeded</h1><p>You have successfully logged in.</p></body></html>' > /usr/local/apache2/htdocs/index.html
 
 # Configure httpd for basic authentication
-RUN echo "<Directory '/usr/local/apache2/htdocs'> \
-    AuthType Basic \
-    AuthName 'Restricted Content' \
-    AuthUserFile '/usr/local/apache2/conf/.htpasswd' \
-    Require valid-user \
-</Directory>" >> /usr/local/apache2/conf/httpd.conf
+RUN echo '<Directory "/usr/local/apache2/htdocs">\n\
+    AuthType Basic\n\
+    AuthName "Restricted Content"\n\
+    AuthUserFile "/usr/local/apache2/conf/.htpasswd"\n\
+    Require valid-user\n\
+</Directory>\n' >> /usr/local/apache2/conf/httpd.conf
 
 EXPOSE 80
 
