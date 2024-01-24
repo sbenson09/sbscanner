@@ -128,7 +128,7 @@ docker run [image name] [options]
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 * For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
   * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
-* In larger scans that would likely run on a daily schedule, the script is also sufficiently performant, but could certainly be optimized
+* In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but almost certainly could be optimized. Note that the simulation was performed against localhost.
   * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
 * CSV file input assumes the use of a header row.
 
