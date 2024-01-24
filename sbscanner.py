@@ -25,7 +25,7 @@ from base64 import b64encode
 @click.option('--output', type=click.Choice(['text', 'json', 'xml'], case_sensitive=False), default='text', help='Output format: text, json or xml')
 @click.pass_context
 def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, username, password, verbose, no_verify_ssl, output):
-    """An HTTP Basic Authentication scanner written in Python.
+    """An HTTP Basic Authentication scanner written in Python by Sean Benson.
 
     Features:\n
     * Supports multiple forms of input (csv file, txt file, list of args).\n
@@ -150,14 +150,17 @@ def generate_report(targets, username, password, verbose):
         elif verbose and 'error' in details:
             click.echo(f"{target} - FAILED - Connection failed: {details['error']}")
 
-# Processing of input
+# Normalize URLs, anticipating URLs with trailing forwardslashes
+def normalize_url(url):
+    return url.rstrip('/')
 
+# Processing of input
 def process_csv(filepath, url_column, port_column):
     targets = {}
     with open(filepath, newline='') as csv_file:
         reader = csv.DictReader(csv_file)
         for line_number, row in enumerate(reader, start=2):  # Start at 2 to account for the header row
-            url = row[url_column]
+            url = normalize_url(row[url_column].strip())
             port = row[port_column].strip()
             if not port.isdigit() or not 0 < int(port) <= 65535:
                 raise click.UsageError(f"Invalid port found in CSV: {port} (Line {line_number})")
@@ -170,23 +173,24 @@ def process_text_file(filepath):
     with open(filepath, 'r') as text_file:
         for line_number, line in enumerate(text_file, start=1):
             line = line.strip()
-            if ':' in line:
-                url, port = line.rsplit(':', 1)
-                port = port.strip()
-                if not port.isdigit() or not 0 < int(port) <= 65535:
-                    raise click.UsageError(f"Invalid port found in text file: {port} (Line {line_number})")
-                targets[line] = {'url': url, 'port': port}
+            parts = line.rsplit(':', 1)
+            if len(parts) == 2 and parts[1].isdigit() and 0 < int(parts[1]) <= 65535:
+                url = normalize_url(parts[0])
+                port = parts[1]
+                targets[f"{url}:{port}"] = {'url': url, 'port': port}
+            else:
+                raise click.UsageError(f"Line {line_number} in text file is not correctly formatted as 'url:port'.")
     return targets
 
 def process_list(urls, ports):
     targets = {}
     url_list = urls.split(',')
     port_list = ports.split(',')
-
+    
     for url in url_list:
+        url = normalize_url(url.strip())  # Normalize and strip whitespace from the URL
         for port in port_list:
-            url = url.strip()
-            port = port.strip()
+            port = port.strip()  # Strip whitespace from the port
             if not port.isdigit() or not 0 < int(port) <= 65535:
                 raise click.UsageError(f"Invalid port found in list: {port}")
             key = f"{url}:{port}"
