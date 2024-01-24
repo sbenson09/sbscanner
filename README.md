@@ -32,6 +32,7 @@ The scanner is written in Python.
 ### Assumptions & Considerations
 * While Nmap could be easily leveraged for the bulk, if not all of these requirements, writing a wrapper that provides nmap input would likely not be within the spirit of the exercise and thus a scanning engine should be built from scratch.
 * The scanner should support both HTTP and HTTPS.
+* While certain requirements of the assignment are hardcoded (e.g. use of root:root), where possible, the scanner will expect these to be input into the scanner as an argument to allow for future flexibility.
 
 ## Dependencies
 * aiohttp
