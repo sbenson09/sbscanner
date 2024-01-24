@@ -46,6 +46,6 @@ The scanner is written in Python.
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
 
-Accepts list input
-Accepts csv input
-Accepts flat file input
+* Accepts list input
+* Accepts csv input
+* Accepts flat file input
