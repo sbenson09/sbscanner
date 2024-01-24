@@ -28,8 +28,8 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     """An HTTP Basic Authentication scanner written in Python.
 
     Features:\n
-    * Supports multiple forms of input (csv, txt, list of args).\n
-    * Supports multiple forms of output (STDOUT, XML, CSV).\n
+    * Supports multiple forms of input (csv file, txt file, list of args).\n
+    * Supports multiple forms of output via STDOUT (Text report, XML, CSV).\n
     * Performant through the use of Python's aiohttp framework.\n"""
 
     targets = process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose)
