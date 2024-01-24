@@ -54,4 +54,4 @@ To run the tests associated with this scanner, run `python tests.py`
 ## To do
 * Comments
 * Summary function
-  
+* Dockerfile
