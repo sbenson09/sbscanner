@@ -115,8 +115,11 @@ async def scan_targets(targets, verbose, username, password, verify_ssl=True):
     
     ssl_context = None if verify_ssl else False  #  None == ssl verification, False == no ssl verification.
 
+    # Define request timeout in seconds
+    timeout_duration = aiohttp.ClientTimeout(total=2)
+
     # Create async http session to be used for all requests, loop through all targets
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=timeout_duration) as session:
         for target, details in targets.items():
             connected = False
             try:
@@ -147,7 +150,6 @@ async def scan_targets(targets, verbose, username, password, verify_ssl=True):
                         details.update({
                             'connected': connected,
                             'basic_auth_required': False,
-                            'authentication_success': not initial_response.status == 401,
                         })
             except aiohttp.ClientError as e:  # Client unable to connect
                 details.update({
@@ -207,13 +209,13 @@ def process_csv(filepath, url_column, port_column):
 
 def process_text_file(filepath):
     """
-    Takes a txt filepath and header names, validates and processes the input, and returns a dictionary of targets to scan.
+    Takes a txt filepath, validates and processes the input, and returns a dictionary of targets to scan.
     """
     targets = {}
     with open(filepath, 'r') as text_file:
         for line_number, line in enumerate(text_file, start=1):
             line = line.strip()
-            parts = line.rsplit(':', 1) 
+            parts = line.rsplit(':', 1)
             # Validate ports are digits within TCP port range
             if len(parts) == 2 and parts[1].isdigit() and 0 < int(parts[1]) <= 65535:
                 url = normalize_url(parts[0])
