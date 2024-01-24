@@ -60,6 +60,37 @@ Options:
   --help                    Show this message and exit.
 ```
 
+## Example usage
+
+##### Scanning a list of URLs/Ports in a .csv.
+```
+~/sbscanner/ main ≡
+$ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl          
+http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://localhost:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+```
+
+##### Scanning a list of URLs/Ports in a .csv, with verbose output.
+```
+~/sbscanner/ main ≡
+$ python3 sbscanner.py --csv inputs/csv_input.csv  --url-col URL --port-col Port  --no-verify-ssl --verbose     
+Using csv input.
+http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://localhost:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+http://127.0.0.1:8082 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
+http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
+http://127.0.0.1:8084 - FAILED - HTTP Basic auth not required
+http://127.0.0.1:8085 - FAILED - HTTP Basic auth not required
+http://127.0.0.1:8086 - FAILED - Connection failed: Cannot connect to host 127.0.0.1:8086 ssl:False [Connect call failed ('127.0.0.1', 8086)]
+http://127.0.0.1:8087 - FAILED - Connection failed: Cannot connect to host 127.0.0.1:8087 ssl:False [Connect call failed ('127.0.0.1', 8087)]
+https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
+https://127.0.0.1:8444 - FAILED - Connection failed: Cannot connect to host 127.0.0.1:8444 ssl:False [Connect call failed ('127.0.0.1', 8444)]
+```
+
+
 ### Assumptions & Considerations
 * While Nmap could be easily leveraged for the assignment and may allow for easily meeting the requirements, this is assumed to be out of ther spirit of the assignment, and therefore not considered.
 * The scanner must support both HTTP and HTTPS.
@@ -75,9 +106,9 @@ Options:
 * Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale.
 
 ## Dependencies
-* aiohttp
 * aiosync
 * click
+* dicttoxml
 
 ## Tests
 To run the tests associated with this scanner, run `python tests.py`
