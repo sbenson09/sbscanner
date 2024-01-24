@@ -123,7 +123,7 @@ docker run [image name] [options]
 ```
 
 ### Assumptions & Considerations
-* While Nmap could be easily leveraged for the assignment and may allow for easily meeting the requirements, this is assumed to be out of ther spirit of the assignment, and therefore not considered.
+* While Nmap or similar existing tools could be easily leverage as the scanning engine, this is assumed to be out of ther spirit of the assignment, and therefore were not considered.
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as commandline arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 * For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
@@ -135,22 +135,11 @@ docker run [image name] [options]
 ## Limitations
 * The scanner assumed TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale would be very desirable, but avoided for this assignment.
-* Requests that are silently dropped by either the server or WAFs may result in significant slowdowns.
+* Testing has been limited to webservers running on localhost via docker. Additional testing with remote targets at scale would be desirable, but was avoided for this assignment.
+* Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
 
 ## Dependencies
 * aiosync
 * click
 * dicttoxml
 
-## Tests
-To run the tests associated with this scanner, run `python tests.py`
-
-* Accepts list input
-* Accepts csv input
-* Accepts flat file input
-
-## To do
-* Comments
-* Summary function
-* Dockerfile
