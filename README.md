@@ -30,7 +30,7 @@ The scanner is written in Python.
 ## Instructions for use
 
 ### Assumptions & Considerations
-* While Nmap could be easily leveraged for the bulk, if not all of these requirements, writing a wrapper that provides nmap input would likely not be within the spirit of the exercise. Given this, we have opted to create our own scanning engine.
+* While Nmap could be easily leveraged for the bulk, if not all of these requirements, writing a wrapper that provides nmap input would likely not be within the spirit of the exercise and thus a scanning engine should be built from scratch.
 * The scanner should support both HTTP and HTTPS.
 
 ## Dependencies
