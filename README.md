@@ -27,6 +27,12 @@ The scanner is written in Python.
 ### Accuracy - How can you confirm the result is a true positive?
 **Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
 
+## Installation
+```bash
+git clone https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024.git
+pip3 install -r requirements.txt
+```
+
 ## Instructions for use
 ```
 Usage: sbscanner.py [OPTIONS]
@@ -93,7 +99,7 @@ https://127.0.0.1:8444 - FAILED - Connection failed: Cannot connect to host 127.
 ##### Scanning URLs/Ports defined in a .txt.
 ```
 ~/sbscanner/ main ⇣ ≡
-❯ python3 sbscanner.py --text inputs/text_input.txt --no-verify-ssl
+$ python3 sbscanner.py --text inputs/text_input.txt --no-verify-ssl
 http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
@@ -102,7 +108,7 @@ https://127.0.0.1:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'r
 ##### Scanning a list of URLs/Ports provided as commandline arguments.
 ```
 ~/sbscanner main ⇣ ≡
-❯ python3 sbscanner.py --list --list-ports 80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl
+$ python3 sbscanner.py --list --list-ports 80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl
 http://127.0.0.1:8080 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 http://127.0.0.1:8081 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
 https://localhost:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'root' and password: 'root'
@@ -111,7 +117,7 @@ https://localhost:8443 - SUCCESS -  HTTP Basic auth succeeded using username: 'r
 ##### Scanning a list of URL/Ports provided as commandline arguments, and using grep to filter results to auth failure due to invalid credentials.
 ```
 ~/sbscanner main ⇣ ≡
-❯ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl --verbose | grep "Basic auth failed"
+$ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443 --list-urls http://127.0.0.1,https://localhost --no-verify-ssl --verbose | grep "Basic auth failed"
 http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
 ```
 
@@ -120,6 +126,25 @@ http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root
 A Dockerfile has also been included for use. Build the docker image, and then run with the following:
 ```
 docker run [image name] [options]
+```
+
+##### Docker example usage
+```
+~/sbscanner main ⇣ ≡
+$ docker build. -t sbscanner
+
+~/sbscanner main ⇣ ≡
+$ docker run sbscanner --text inputs/text_input_remote.txt --verbose --no-verify-ssl             
+https://www.google.com:443 - FAILED - HTTP Basic auth not required.
+https://www.youtube.com:443 - FAILED - HTTP Basic auth not required.
+https://www.facebook.com:443 - FAILED - HTTP Basic auth not required.
+https://www.amazon.com:443 - FAILED - HTTP Basic auth not required.
+https://www.wikipedia.org:443 - FAILED - HTTP Basic auth not required.
+https://www.twitter.com:443 - FAILED - HTTP Basic auth not required.
+https://www.instagram.com:443 - FAILED - HTTP Basic auth not required.
+https://www.linkedin.com:443 - FAILED - HTTP Basic auth not required.
+https://www.netflix.com:443 - FAILED - HTTP Basic auth not required.
+https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
 ### Assumptions & Considerations
@@ -135,11 +160,13 @@ docker run [image name] [options]
 ## Limitations
 * The scanner assumed TCP, and does not support the scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker. Additional testing with remote targets at scale would be highly desirable.
+* Testing against tens of thousands of remote hosts believed to be unfeasible, and thus, testing bulk targets has been simulated via webservers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
 * Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
 
 ## Dependencies
-* aiosync
+
+sbscanner contains the following depencies.
+* aiohttp
 * click
 * dicttoxml
 
