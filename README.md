@@ -14,7 +14,7 @@ The scanner is written in Python.
 ### Scaleability - You may need to run this on tens of thousands of hosts.
 **Performance:** To ensure high performance, the scanner makes HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
 
-**Bulk targeting:** To ensure the scanner can be ran against tens of thousands of hosts, the scanner supports declaring bulk targets via a file.
+**Bulk targeting:** To ensure the scanner can be ran against tens of thousands of hosts, the scanner supports inputting bulk targets via file.
 
 ### Ports - The service may be running on an alternative port.
 **Alternative port selection:** The scanner addresses the concern of alternative ports by allowing the port to be specified, either together, as a piece of data paired with a host entry, or separately, as list provided by the user.
