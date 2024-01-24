@@ -147,6 +147,9 @@ https://www.netflix.com:443 - FAILED - HTTP Basic auth not required.
 https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
+### Sample input data
+Sample input and testing data has been provided for the user in the [/inputs](https://github.com/sbenson09/apple_vuln_response_takehome_assignment_01_2024/tree/main/inputs) folder.
+
 ### Assumptions & Considerations
 * While Nmap or similar existing tools could be easily leverage as the scanning engine, this is assumed to be out of ther spirit of the assignment, and therefore were not considered.
 * The scanner must support both HTTP and HTTPS.
