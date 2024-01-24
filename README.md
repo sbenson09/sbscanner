@@ -17,15 +17,15 @@ The scanner is written in Python.
 **Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk targets input via file.
 
 ### Ports - The service may be running on an alternative port.
-**Alternative port selection:** Scanning of alternative ports is supported by allowing the user to define each port to be scanned in conjunction with the URL provided. Alternatively, a list of ports can be supplied as command line argument using the `--list` flag and `--list-ports [ports]` option.
+**Alternative port selection:** Users are able to define URL:Port pairs in .csv and .txt files. Alternatively, users may provide a list of ports to scan as a command line argument via the `--list` flag and `--list-ports [ports]` option.
 
 ### Output - Is the output of the tool easy to decipher and could you easily use the input for other tools?
-**Easy to decipher:** The scanner addresses this concern by providing cases of successful HTTP Basic Auth to STDOUT by default. Failures and errors are also easily presented through the use of the `--verbose` flag. Each result is captured in its own line, and therefore easily parsed by grep and other stream editors.
+**Easy to decipher:** The scanner clearly reports cases of successful HTTP Basic Auth to STDOUT by default. Failures and errors are also easily presented through the use of the `--verbose` flag. Each result is captured in its own line, and therefore easily parsed by grep and other stream editors.
 
-**Output interpoerability:** The scanner addresses output interoperability by allowing the user to export the output to STDOUT as either a JSON or XML, in addition to the default text report option.
+**Output interpoerability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT as either a JSON or XML, in addition to the default text report option.
 
 ### Accuracy - How can you confirm the result is a true positive?
-**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success 
+**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
 
 ## Instructions for use
 ```
