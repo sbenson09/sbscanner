@@ -162,7 +162,7 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
-* For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant  
+* For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant.
   * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
 * In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but certainly could be optimized. Note that the simulation was performed against localhost.
   * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
