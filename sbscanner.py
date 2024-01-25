@@ -174,7 +174,7 @@ def generate_text_report(targets, username, password, verbose):
     for target, details in targets.items():
         if details.get('connected'):
             if details.get('basic_auth_required') and details.get('authentication_success'):
-                click.echo(f"{target} - SUCCESS -  HTTP Basic auth succeeded with username: '{username}' and password: '{password}'")                             # Handle the verbose output for various cases
+                click.echo(f"{target} - SUCCESS -  HTTP Basic auth succeeded with username: '{username}' and password: '{password}'") 
             # Handle the verbose output for various cases
             elif verbose:
                 if details.get('basic_auth_required') is False and 'error' in details and 'HTTP Authentication required' in details.get('error'):
