@@ -65,13 +65,17 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     if csv_filepath and not any([text_filepath, list_flag]):
         if verbose:
             click.echo("Using csv input.")
-        with open(csv_filepath, newline='') as csv_file:
-            csv_reader = csv.reader(csv_file)
-            headers = next(csv_reader, None)
-            if url_col not in headers or port_col not in headers:
-                raise click.UsageError(f'CSV file must contain "{url_col}" and "{port_col}" columns.')
-            target_dict = process_csv(csv_filepath, url_col, port_col)
-    
+        if not url_col or not port_col:
+            raise click.UsageError('When using --csv option, you must also provide --url-col and --port-col options.')    
+        try:
+            with open(csv_filepath, newline='') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                headers = next(csv_reader, None)
+                if url_col not in headers or port_col not in headers:
+                    raise click.UsageError(f'CSV file must contain "{url_col}" and "{port_col}" columns.')
+                target_dict = process_csv(csv_filepath, url_col, port_col)
+        except Exception as e:
+            raise click.ClickException(f"Error processing the CSV file: {e}")    
     # For text input, loop through .txt file, validate that lines follow expected format,
     # and then return a target dictionary
     elif text_filepath and not any([csv_filepath, list_flag]):
@@ -101,70 +105,76 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     return target_dict
     
 async def scan_targets(targets, verbose, username, password, verify_ssl=True):
-    """
-    Takes input of target dictionary and config options, runs a scan against each item asyncronously to determine
-    whether they require HTTP basic authentication, and if so, whether the provided credentials can successfully authenticate
-    Returns target dictionary updated with scan results.
-    """
-
-    # Prepare the authentication header per requirements
-    # reference: https://stackoverflow.com/questions/53622829/python-encode-base64-to-basic-connect-to-an-api
     creds = f'{username}:{password}'.encode('utf-8')  
     auth_header = 'Basic ' + b64encode(creds).decode('utf-8')
-    
-    ssl_context = None if verify_ssl else False  #  None == ssl verification, False == no ssl verification.
-
-    # Define request timeout in seconds
+    ssl_context = None if verify_ssl else False
     timeout_duration = aiohttp.ClientTimeout(total=2)
 
-    # Create async http session to be used for all requests, loop through all targets
-    async with aiohttp.ClientSession(timeout=timeout_duration) as session:
-        for target, details in targets.items():
-            connected = False
-            try:
-                # Attempt the first request without the Authorization header
-                async with session.get(target, ssl=ssl_context) as initial_response:
-                    connected = True
-                    # Check for HTTP Authentication requirements.
-                    if initial_response.status == 401 and 'WWW-Authenticate' in initial_response.headers:
-                        # Check if Basic auth is supported
-                        supports_basic_auth = 'Basic' in initial_response.headers.get('WWW-Authenticate', '')
+    semaphore = asyncio.Semaphore(100)
 
-                        if supports_basic_auth:  # Basic auth is supported, try to authenticate
-                            async with session.get(target, headers={'Authorization': auth_header}, ssl=ssl_context) as auth_response:
-                                auth_success = 200 <= auth_response.status < 300
-                                details.update({
-                                    'connected': connected,
-                                    'basic_auth_required': supports_basic_auth,
-                                    'authentication_success': auth_success,
-                                })
-                        else:  # Basic auth is NOT supported.
-                            details.update({
+    async with aiohttp.ClientSession(timeout=timeout_duration) as session:
+        # Create a list of coroutines for scanning each target
+        tasks = [scan_target(session, semaphore, target, details, auth_header, ssl_context) for target, details in targets.items()]
+        # Gather the results from all the coroutines
+        results = await asyncio.gather(*tasks)
+        
+        # Update the targets dictionary with the results
+        for result in results:
+            target_key = result.pop('target_key')
+            targets[target_key].update(result)
+
+    return targets
+
+async def scan_target(session, semaphore, target_key, details, auth_header, ssl_context):
+    async with semaphore:
+        connected = False
+        try:
+            # Attempt the initial request
+            async with session.get(f"{target_key}", ssl=ssl_context) as initial_response:
+                connected = True
+                # Check for HTTP authentication requirements
+                if initial_response.status == 401 and 'WWW-Authenticate' in initial_response.headers:
+                    supports_basic_auth = 'Basic' in initial_response.headers.get('WWW-Authenticate', '')
+                    if supports_basic_auth:
+                        # Attempt authentication
+                        async with session.get(f"{target_key}", headers={'Authorization': auth_header}, ssl=ssl_context) as auth_response:
+                            auth_success = 200 <= auth_response.status < 300
+                            return {
+                                'target_key': target_key,
                                 'connected': connected,
-                                'basic_auth_required': False,
-                                'authentication_success': False,
-                                'error': 'HTTP Authentication required, but Basic Auth is not supported.',
-                            })
-                    else:  # No auth required
-                        details.update({
+                                'basic_auth_required': supports_basic_auth,
+                                'authentication_success': auth_success,
+                            }
+                    else:
+                        return {
+                            'target_key': target_key,
                             'connected': connected,
                             'basic_auth_required': False,
-                        })
-            except aiohttp.ClientError as e:  # Client unable to connect
-                details.update({
-                    'connected': connected,
-                    'basic_auth_required': False,  #Assume false
-                    'authentication_success': False,
-                    'error': str(e),
-                })
-            except Exception as e:  # Generic exception
-                details.update({
-                    'connected': connected,
-                    'basic_auth_required': False,  #Assume false
-                    'authentication_success': False,
-                    'error': 'An unexpected error occurred.',
-                })
-    return targets
+                            'authentication_success': False,
+                            'error': 'HTTP Authentication required, but Basic Auth is not supported.'
+                        }
+                else:
+                    return {
+                        'target_key': target_key,
+                        'connected': connected,
+                        'basic_auth_required': False,
+                    }
+        except aiohttp.ClientError as e:
+            return {
+                'target_key': target_key,
+                'connected': connected,
+                'basic_auth_required': False,
+                'authentication_success': False,
+                'error': str(e),
+            }
+        except Exception as e:
+            return {
+                'target_key': target_key,
+                'connected': connected,
+                'basic_auth_required': False,
+                'authentication_success': False,
+                'error': 'An unexpected error occurred.'
+            }
 
 def generate_text_report(targets, username, password, verbose):
     """
@@ -244,4 +254,4 @@ def process_list(urls, ports):
     return targets
 
 if __name__ == '__main__':
-    scan_workflow()
+    asyncio.run(scan_workflow())
