@@ -9,7 +9,7 @@ from xml.dom.minidom import parseString
 from base64 import b64encode
 
 @click.command(context_settings=dict(
-    # To change click argument handling behavior:
+    # To change Click's argument handling behavior:
     #ignore_unknown_options=True,
     #allow_extra_args=True,
 ))
