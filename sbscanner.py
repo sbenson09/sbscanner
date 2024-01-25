@@ -100,7 +100,6 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
 
     return target_dict
     
-# Scanning
 async def scan_targets(targets, verbose, username, password, verify_ssl=True):
     """
     Takes input of target dictionary and config options, runs a scan against each item asyncronously to determine
