@@ -13,9 +13,9 @@ Write a scanner in either Python, Go, or Bash which will test web servers basic 
 The scanner is written in Python.
 
 ### Scalability - You may need to run this on tens of thousands of hosts.
-**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/). Concurrency and timeout options are easily available to the user for performance tuning.
+**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/). Scanner concurrency and timeout options are easily available to the user for performance tuning.
 
-**Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk targets input via file.
+**Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk target input via file.
 
 ### Ports - The service may be running on an alternative port.
 **Alternative port selection:** Users are able to define URL:Port pairs in .csv and .txt files. Alternatively, users may provide a list of ports to scan as a command line argument via the `--list` flag and `--list-ports [ports]` option.
@@ -222,24 +222,26 @@ https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 Sample input and testing data has been provided and available for use in the [/inputs](https://github.com/sbenson09/sbscanner/tree/main/inputs) folder.
 
 ## Test server environment via docker compose.
-To test across several cases (http, https, nginx server, httpd server, successful basic auth, failed basic auth invalid credentials, etc.) a series of Dockerfiles, orchestrated by a docker-compose manifest were included in the [/test_servers](https://github.com/sbenson09/sbscanner/tree/main/test_servers) folder.
+To test across several cases (http, https, nginx server, httpd server, successful basic auth, failed basic auth due to invalid credentials, etc.) a series of Dockerfiles, orchestrated by a docker-compose manifest were included in the [/test_servers](https://github.com/sbenson09/sbscanner/tree/main/test_servers) folder.
 
 Refer to Docker's [docker compose documentation](https://docs.docker.com/compose/) for instructions on installation and use.
 
 ## Assumptions & Considerations
 * Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
 * The scanner must support both HTTP and HTTPS.
-* While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 *  The scanner must be performant in both minimal use cases (<= 10K URL/Ports) and large use cases (>=250K URL/Ports). To validate this, I measured runtime with `time` on my M2 Macbook Air.
   * `time` output on 10k URL/Ports: `0.91s user 0.19s system 96% cpu 1.139 total`.
   * `time` output on 258k URL/Ports: ` 47.44s user 15.35s system 105% cpu 59.473 total`.
 * CSV file input assumes the use of a header row.
+* While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner should allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
+
 
 ## Limitations
 * The scanner is designed for TCP and does not support scanning of UDP ports.
-* The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable to better understand performance bottlenecks.
-* Requests that are silently dropped by a server or WAF may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
+* The scanner requires URL values for input, and thus, all scan targets must be prefixed with http(s)://.
+* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable to better understand performance and potential bottlenecks.
+* Requests that are silently dropped by a server or WAF may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds, and can be configured by the user.
+* CSV file input assumes the use of a header row.
 
 ## Dependencies
 sbscanner was developed using Python 3.11, and contains the following dependencies.
