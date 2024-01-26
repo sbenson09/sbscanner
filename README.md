@@ -231,8 +231,8 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 *  The scanner must be performant in both minimal use cases (<= 10K URL/Ports) and large use cases (>=250K URL/Ports). To validate this, I measured runtime with `time` on my M2 Macbook Air.
-  * (`time` output on 10k URL/Ports: `0.91s user 0.19s system 96% cpu 1.139 total`).
-  * (`time` output on 258k URL/Ports: ` 47.44s user 15.35s system 105% cpu 59.473 total`).
+  * `time` output on 10k URL/Ports: `0.91s user 0.19s system 96% cpu 1.139 total`.
+  * `time` output on 258k URL/Ports: ` 47.44s user 15.35s system 105% cpu 59.473 total`.
 * CSV file input assumes the use of a header row.
 
 ## Limitations
