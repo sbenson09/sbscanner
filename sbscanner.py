@@ -38,9 +38,7 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     targets = process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose)
     
     # Run the scan against each provided target. 
-    event_loop = asyncio.get_event_loop()
-    scan_result = event_loop.run_until_complete(scan_targets(targets, verbose, username, password, not no_verify_ssl))
-    event_loop.close()
+    scan_result = asyncio.run(scan_targets(targets, verbose, username, password, not no_verify_ssl))
     
     # Provide output report based on user input
     if output == 'json':
@@ -254,4 +252,4 @@ def process_list(urls, ports):
     return targets
 
 if __name__ == '__main__':
-    asyncio.run(scan_workflow())
+    scan_workflow()
