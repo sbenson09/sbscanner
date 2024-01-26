@@ -13,7 +13,7 @@ Write a scanner in either Python, Go, or Bash which will test web servers basic 
 The scanner is written in Python.
 
 ### Scalability - You may need to run this on tens of thousands of hosts.
-**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/).
+**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/). Concurrency and timeout options are easily available to the user for performance tuning.
 
 **Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk targets input via file.
 
@@ -23,7 +23,7 @@ The scanner is written in Python.
 ### Output - Is the output of the tool easy to decipher and could you easily use the input for other tools?
 **Easy to decipher:** The scanner clearly reports cases of successful HTTP Basic Auth to STDOUT by default. Failures and errors are also easily presented through the use of the `--verbose` flag. Each result is captured in its own line, and therefore easily parsed by grep and other stream editors.
 
-**Output interoperability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT as either a JSON or XML, in addition to the default text report option.
+**Output interoperability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT in CSV, JSON or XML, in addition to the default text report option.
 
 ### Accuracy - How can you confirm the result is a true positive?
 **Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
@@ -40,32 +40,44 @@ pip3 install -r requirements.txt
 Usage: sbscanner.py [OPTIONS]
 
   An HTTP Basic Authentication scanner written in Python by Sean Benson.
+  Identifies HTTP servers that support HTTP Basic Authentication with a given
+  set of credentials.
 
   Features:
 
-  * Supports multiple forms of input (csv file, txt file, list of args).
+  * Supports multiple forms of input (CSV file, text file, list of args).
 
-  * Supports multiple forms of output via STDOUT (Text report, XML, CSV).
+  * Supports multiple forms of output via STDOUT (Text report, XML, JSON,
+  CSV).
 
-  * Performant through the use of Python's aiohttp framework.
+  * Performant through the use of Python's asyncio & aiohttp frameworks.
+
+  * Customizable behavior defined through command line arguments.
 
 Options:
-  --csv PATH                Path to a CSV file, containing a list of urls &
-                            ports.
-  --text PATH               Path to a text file, containing url:port notated
-                            targets.
-  --list                    Flag to indicate that input is supplied via CLI
-                            arguments.
-  --list-urls TEXT          Comma separated list of URL values.
-  --list-ports TEXT         Comma separated list of port values.
-  --url-col TEXT            Name of the URL column in the CSV.
-  --port-col TEXT           Name of the port column in the CSV.
-  --username TEXT           Username for HTTP Basic Auth.
-  --password TEXT           Password for HTTP Basic Auth.
-  --verbose                 Enables verbose mode for text output.
-  --no-verify-ssl           Disables ssl verification when scanning.
-  --output [text|json|xml]  Output format: text, json or xml
-  --help                    Show this message and exit.
+  --csv PATH                    Path to a CSV file, containing a list of urls
+                                & ports.
+  --text PATH                   Path to a text file, containing url:port
+                                notated targets.
+  --list                        Flag to indicate that input is supplied via
+                                CLI arguments.
+  --list-urls TEXT              Comma separated list of URL values.
+  --list-ports TEXT             Comma separated list of port values.
+  --url-col TEXT                Name of the URL column in the CSV.
+  --port-col TEXT               Name of the port column in the CSV.
+  --username TEXT               Username for HTTP Basic Auth. Default of
+                                'root'
+  --password TEXT               Password for HTTP Basic Auth. Default of
+                                'root'
+  --concurrency INTEGER RANGE   Number of concurrent scan jobs to run at a
+                                time. Default of '100'  [x>=1]
+  --timeout INTEGER RANGE       Request timeout in seconds. Default of '2'
+                                [x>=0]
+  --verbose                     Enables verbose mode for text output.
+  --no-verify-ssl               Disables ssl verification when scanning.
+  --output [text|json|xml|csv]  Output format: text, json, csv, or xml.
+                                Default of text'
+  --help                        Show this message and exit.
 ```
 
 ## Example usage
@@ -123,6 +135,62 @@ $ python3 sbscanner.py --list --list-ports 8083,8084,8085,8086,80,8080,8081,8443
 http://127.0.0.1:8083 - FAILED - HTTP Basic auth failed with the username: 'root' and password: 'root'
 ```
 
+### Scanning a list of URL/Ports provided as command line arguments and outputting as JSON.
+```
+~/sbscanner main ⇣ ≡
+$ python3 sbscanner.py --list --list-urls http://127.0.0.1,https://127.0.0.1 --list-ports 8080 --no-verify-ssl --verbose --output json               
+{
+    "http://127.0.0.1:8080": {
+        "url": "http://127.0.0.1",
+        "port": "8080",
+        "connected": true,
+        "basic_auth_required": true,
+        "authentication_success": true
+    },
+    "https://127.0.0.1:8080": {
+        "url": "https://127.0.0.1",
+        "port": "8080",
+        "connected": false,
+        "basic_auth_required": false,
+        "authentication_success": false,
+        "error": "Cannot connect to host 127.0.0.1:8080 ssl:False [[SSL] record layer failure (_ssl.c:1006)]"
+    }
+}
+```
+
+### Scanning a list of URL/Ports provided as command line arguments and outputting as XML.
+```
+~/sbscanner main ⇣ ≡
+$ python3 sbscanner.py --list --list-urls http://127.0.0.1,https://127.0.0.1 --list-ports 8080 --no-verify-ssl --verbose --output xml
+<?xml version="1.0" ?>
+<scan_results>
+    <key name="http://127.0.0.1:8080">
+        <url>http://127.0.0.1</url>
+        <port>8080</port>
+        <connected>true</connected>
+        <basic_auth_required>true</basic_auth_required>
+        <authentication_success>true</authentication_success>
+    </key>
+    <key name="https://127.0.0.1:8080">
+        <url>https://127.0.0.1</url>
+        <port>8080</port>
+        <connected>false</connected>
+        <basic_auth_required>false</basic_auth_required>
+        <authentication_success>false</authentication_success>
+        <error>Cannot connect to host 127.0.0.1:8080 ssl:False [[SSL] record layer failure (_ssl.c:1006)]</error>
+    </key>
+</scan_results>
+```
+
+### Scanning a list of URL/Ports provided as command line arguments and outputting as CSV.
+```
+~/sbscanner main ⇣ ≡
+$ python3 sbscanner.py --list --list-urls http://127.0.0.1,https://127.0.0.1 --list-ports 8080 --no-verify-ssl --verbose --output csv
+target,connected,basic_auth_required,authentication_success,error
+http://127.0.0.1:8080,True,True,True,
+https://127.0.0.1:8080,False,False,False,Cannot connect to host 127.0.0.1:8080 ssl:False [[SSL] record layer failure (_ssl.c:1006)]
+```
+
 ## Docker
 
 A Dockerfile to build the scanner has also been included for use. Build the docker image, and then run with the following:
@@ -162,18 +230,16 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * Building on top of existing tools like Nmap were assumed out of the spirit of the assignment, and thus not considered.
 * The scanner must support both HTTP and HTTPS.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner will allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
-* For ad-hoc use cases where inputs are assumed to be minimal (<= 10K URL/Ports), the script is sufficiently performant.
-  * (`time` output on 10k URL/Ports: `1.14s user 0.27s system 73% cpu 1.925 total`).
-* In larger scans that would likely run on a daily schedule, the script is simulated to be sufficiently performant, but certainly could be optimized. Note that the simulation was performed against localhost.
-  * (`time` output on 258k URL/Ports: `43.21s user 15.13s system 3% cpu 24:28.23 total`).
+*  The scanner must be performant in both minimal use cases (<= 10K URL/Ports) and large use cases (>=250K URL/Ports). To validate this, I measured runtime with `time` on my M2 Macbook Air.
+  * (`time` output on 10k URL/Ports: `0.91s user 0.19s system 96% cpu 1.139 total`).
+  * (`time` output on 258k URL/Ports: ` 47.44s user 15.35s system 105% cpu 59.473 total`).
 * CSV file input assumes the use of a header row.
 
 ## Limitations
 * The scanner is designed for TCP and does not support scanning of UDP ports.
 * The scanner requires URL values, and thus, all scan targets must be prefixed with http(s)://.
-* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable.
-* Requests that are silently dropped by either the server or WAFs may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
-* The scanner has no options to control concurrency or rate limiting.
+* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable to better understand performance bottlenecks.
+* Requests that are silently dropped by a server or WAF may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds.
 
 ## Dependencies
 sbscanner was developed using Python 3.11, and contains the following dependencies.

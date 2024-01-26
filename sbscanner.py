@@ -35,10 +35,9 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
 
     Features:\n
     * Supports multiple forms of input (CSV file, text file, list of args).\n
-    * Supports multiple forms of output via STDOUT (Text report, XML, JSON).\n
-    * Performant through the use of Python's asyncio & aiohttp framework.\n
+    * Supports multiple forms of output via STDOUT (Text report, XML, JSON, CSV).\n
+    * Performant through the use of Python's asyncio & aiohttp frameworks.\n
     * Customizable behavior defined through command line arguments."""
-    
 
     # Take input provided by user, and process into a dictionary of targets to use for scanning
     targets = process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose)
