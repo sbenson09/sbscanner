@@ -20,13 +20,15 @@ from base64 import b64encode
 @click.option('--list-ports', 'list_ports', required=False, help='Comma separated list of port values.')
 @click.option('--url-col', required=False, help='Name of the URL column in the CSV.')
 @click.option('--port-col', required=False, help='Name of the port column in the CSV.')
-@click.option('--username', 'username', default='root', help='Username for HTTP Basic Auth.')
-@click.option('--password', 'password', default='root', help='Password for HTTP Basic Auth.')
+@click.option('--username', 'username', default='root', help='Username for HTTP Basic Auth. Default of \'root\'')
+@click.option('--password', 'password', default='root', help='Password for HTTP Basic Auth. Default of \'root\'')
+@click.option('--concurrency', 'concurrency', default=100, type=click.IntRange(min=1), help='Number of targets targets to scan at a time. Default of \'100\'')
+@click.option('--timeout', 'timeout', default=2, type=click.IntRange(min=0), help='Request timeout in seconds. Default of \'2\'')
 @click.option('--verbose', is_flag=True, required=False, help='Enables verbose mode for text output.')
 @click.option('--no-verify-ssl', is_flag=True, required=False, help='Disables ssl verification when scanning.')
-@click.option('--output', type=click.Choice(['text', 'json', 'xml'], case_sensitive=False), default='text', help='Output format: text, json or xml')
+@click.option('--output', type=click.Choice(['text', 'json', 'xml'], case_sensitive=False), default='text', help='Output format: text, json or xml. Default of text\'')
 @click.pass_context
-def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, username, password, verbose, no_verify_ssl, output):
+def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, username, password, concurrency, timeout, verbose, no_verify_ssl, output):
     """An HTTP Basic Authentication scanner written in Python by Sean Benson.
 
     Features:\n
@@ -38,7 +40,7 @@ def scan_workflow(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
     targets = process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_ports, url_col, port_col, verbose)
     
     # Run the scan against each provided target. 
-    scan_result = asyncio.run(scan_targets(targets, verbose, username, password, not no_verify_ssl))
+    scan_result = asyncio.run(scan_targets(targets, verbose, username, password, concurrency, timeout, not no_verify_ssl))
     
     # Provide output report based on user input
     if output == 'json':
@@ -102,13 +104,13 @@ def process_input(ctx, csv_filepath, text_filepath, list_flag, list_urls, list_p
 
     return target_dict
     
-async def scan_targets(targets, verbose, username, password, verify_ssl=True):
+async def scan_targets(targets, verbose, username, password, concurrency, timeout, verify_ssl=True):
     creds = f'{username}:{password}'.encode('utf-8')  
     auth_header = 'Basic ' + b64encode(creds).decode('utf-8')
     ssl_context = None if verify_ssl else False
-    timeout_duration = aiohttp.ClientTimeout(total=2)
+    timeout_duration = aiohttp.ClientTimeout(total=timeout)
 
-    semaphore = asyncio.Semaphore(100)
+    semaphore = asyncio.Semaphore(concurrency)
 
     async with aiohttp.ClientSession(timeout=timeout_duration) as session:
         # Create a list of coroutines for scanning each target
