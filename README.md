@@ -218,6 +218,8 @@ https://www.netflix.com:443 - FAILED - HTTP Basic auth not required.
 https://www.reddit.com:443 - FAILED - HTTP Basic auth not required.
 ```
 
+Any input files must be within the scanner's directory when the image is built, otherwise they will not be included in the image.
+
 ## Sample input data
 Sample input and testing data has been provided and available for use in the [/inputs](https://github.com/sbenson09/sbscanner/tree/main/inputs) folder.
 
