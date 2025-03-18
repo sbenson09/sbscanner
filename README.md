@@ -1,32 +1,5 @@
-# Apple VRE Take Home Assignment: sbscanner
-
-Author: Sean Benson
-
-## Assignment 
-Write a scanner in either Python, Go, or Bash which will test web servers basic auth for credentials of root:root.
-
-## Requirements
-**sbscanner** is developed to the following requirements:
-
-### Language - Python, Go, or Bash
-
-The scanner is written in Python.
-
-### Scalability - You may need to run this on tens of thousands of hosts.
-**Performance:** To help ensure high network I/O performance, the scanner makes asynchronous HTTP requests using the [aiohttp framework](https://docs.aiohttp.org/en/stable/). Scanner concurrency and timeout options are easily available to the user for performance tuning.
-
-**Bulk targeting:** To enable the scanner to be run against tens of thousands of hosts, the scanner supports bulk target input via file.
-
-### Ports - The service may be running on an alternative port.
-**Alternative port selection:** Users are able to define URL:Port pairs in .csv and .txt files. Alternatively, users may provide a list of ports to scan as a command line argument via the `--list` flag and `--list-ports [ports]` option.
-
-### Output - Is the output of the tool easy to decipher and could you easily use the input for other tools?
-**Easy to decipher:** The scanner clearly reports cases of successful HTTP Basic Auth to STDOUT by default. Failures and errors are also easily presented through the use of the `--verbose` flag. Each result is captured in its own line, and therefore easily parsed by grep and other stream editors.
-
-**Output interoperability:** The scanner's output achieves interoperability by allowing the user to export the output to STDOUT in CSV, JSON or XML, in addition to the default text report option.
-
-### Accuracy - How can you confirm the result is a true positive?
-**Authentication validation:** The scanner confirms accuracy by not only checking to see if the web server supports basic auth, but also authenticates with the webserver using the provided credentials (default: root:root) and confirms success. Logic to handle edge cases (e.g. HTTP Authentication required, but Basic not supported) is also used to ensure accuracy.
+# sbscanner
+sbscanner was a small project I worked on as a take-home interview assignment in early 2024. The primary objective for the assignment was to build a port scanner that could identify and gather information on services that supported HTTP Basic Authentication. It doesn't do anything novel.
 
 ## Installation
 ```
@@ -237,11 +210,10 @@ Refer to Docker's [docker compose documentation](https://docs.docker.com/compose
 * CSV file input assumes the use of a header row.
 * While credentials of the assignment are defined upfront (i.e. `root`:`root`), the scanner should allow these to be input as command line arguments (`--username [username]`, `--password [password]`) to allow for additional flexibility.
 
-
 ## Limitations
 * The scanner is designed for TCP and does not support scanning of UDP ports.
 * The scanner requires URL values for input, and thus, all scan targets must be prefixed with http(s)://.
-* Testing against tens of thousands of remote hosts was believed to be unfeasible, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable to better understand performance and potential bottlenecks.
+* Testing against tens of thousands of remote hosts was considered impractical, and thus, testing bulk targets has been simulated via web servers running on localhost via docker(258K targets). Additional testing with remote targets at scale would be highly desirable to better understand performance and potential bottlenecks.
 * Requests that are silently dropped by a server or WAF may result in significant slowdowns, as the request must timeout. Default timeout is set to 2 seconds, and can be configured by the user.
 * CSV file input assumes the use of a header row.
 
