@@ -1,5 +1,5 @@
 # sbscanner
-sbscanner was a small project I worked on as a part of a take-home interview assignment in early 2024. The primary objective for the assignment was to build a port scanner that could identify and gather information on services that supported HTTP Basic Authentication. It doesn't do anything novel. The code and documentation both were part of the submission.
+sbscanner is a port scanner used to identify services that supported HTTP Basic Authentication. It was created as part of a take-home interview assignment in early 2024.
 
 ## Installation
 ```
